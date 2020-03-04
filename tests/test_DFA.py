@@ -1,4 +1,4 @@
-from DFA import *
+from src.DFA import *
 
 symb_a = finite_automaton.Symbol("a")
 symb_b = finite_automaton.Symbol("b")
