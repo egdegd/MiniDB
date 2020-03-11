@@ -4,4 +4,4 @@ install:
   - pip3 install pyformlang
   - pip3 install pydot
 script:
-  - pytest
+  - python3 -m pytest
