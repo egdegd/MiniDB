@@ -11,6 +11,7 @@ class Client:
     running = True
     graph = Graph()
     dfa = DeterministicFiniteAutomaton()
+    inter_dfa = DeterministicFiniteAutomaton()
 
     def __init__(self):
         self.commands = {
@@ -49,13 +50,13 @@ class Client:
 
     def request(self, reg):
         new_dfa = string_to_min_dfa(reg)
-        inter_dfa = self.dfa.get_intersection(new_dfa)
+        self.inter_dfa = self.dfa.get_intersection(new_dfa)
         g = networkx.nx.DiGraph()
-        for frm, edges in inter_dfa.to_dict().items():
+        for frm, edges in self.inter_dfa.to_dict().items():
             for edge, to in edges.items():
                 g.add_edge(str(frm), str(to), label=str(edge))
         print(f"nodes: {len(g.nodes)}\nedges: {len(g.edges)}")
-        write_dot(g, "File.dot")
+        write_dot(g, "graph.dot")
 
     def exit(self):
         self.running = False
