@@ -1,3 +1,4 @@
+import tempfile
 from os import path
 
 from src.CNF import *
