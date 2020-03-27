@@ -1,10 +1,12 @@
 class Grammar:
     grammar = {}
     nonterminal_alphabet = []
+    start = ''
 
     def __init__(self):
         self.grammar = {}
         self.nonterminal_alphabet = []
+        self.start = 'S'
 
     def add_rule(self, nt, rule):
         if nt not in self.nonterminal_alphabet:
@@ -21,7 +23,7 @@ class Grammar:
     def delete_rule(self, key, rule):
         self.grammar[key].remove(rule)
 
-    def print_grammar(self):
+    def print_in_console_grammar(self):
         for (nt, rules) in self.grammar.items():
             for rule in rules:
                 print(nt + " -> ", end='')
@@ -31,6 +33,7 @@ class Grammar:
 
     def read_grammar(self, file_name):
         file = open(file_name, 'r')
+        start_exist = False
         for line in file:
             if line[-1:] == '\n':
                 line = line[:-1]
@@ -39,11 +42,26 @@ class Grammar:
             d = line.split(' ')
             d = list(filter(lambda a: a != '', d))
             self.add_rule(d[0], d[1:])
+            if not start_exist:
+                self.start = d[0]
+                start_exist = True
         file.close()
 
     def write_grammar(self, file_name):
         file = open(file_name, 'w')
+        if self.grammar == {}:
+            file.close()
+            return
+        nt = self.start
+        rules = self.grammar[nt]
+        for rule in rules:
+            file.write(nt + ' ')
+            for symb in rule:
+                file.write(symb + ' ')
+            file.write('\n')
         for (nt, rules) in self.grammar.items():
+            if nt == self.start:
+                continue
             for rule in rules:
                 file.write(nt + ' ')
                 for symb in rule:
@@ -121,27 +139,27 @@ class Grammar:
             for rule in rules:
                 if rule == ['eps']:
                     self.delete_rule(nt, rule)
-        if 'S' in eps_generating_terminals:  # 'S' is starting nontermenal
+        if self.start in eps_generating_terminals:
             new_symb = self.get_new_nonterminal()
             g = self.grammar.copy()
             for (nt, rules) in g.items():
-                if nt == 'S':
-                    self.grammar[new_symb] = self.grammar.pop('S')
+                if nt == self.start:
+                    self.grammar[new_symb] = self.grammar.pop(self.start)
                 new_rules = []
                 for rule in rules:
                     new_rule = []
                     for symb in rule:
-                        if symb == 'S':
+                        if symb == self.start:
                             new_rule.append(new_symb)
                         else:
                             new_rule.append(symb)
                     new_rules.append(new_rule)
-                if nt == 'S':
+                if nt == self.start:
                     self.grammar[new_symb] = new_rules
-                    self.grammar['S'] = [[new_symb]]
+                    self.grammar[self.start] = [[new_symb]]
                 else:
                     self.grammar[nt] = new_rules
-            self.add_rule('S', ['eps'])
+            self.add_rule(self.start, ['eps'])
 
     def find_chan_pairs(self):
         chan_pairs = []
@@ -199,7 +217,7 @@ class Grammar:
                     rules.remove(rule)
 
     def find_achievable_terminals(self):
-        achievable_terminals = ['S']
+        achievable_terminals = [self.start]
         flag = True
         while flag:
             flag = False

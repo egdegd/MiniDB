@@ -4,20 +4,47 @@ from os import path
 from src.CNF import *
 
 
-def test_print_grammar(capsys):
+def test_print_grammar_in_console(capsys):
     g = Grammar()
     g.grammar = {'S': [['a', 'S', 'b', 'S'], ['eps']]}
-    g.print_grammar()
+    g.print_in_console_grammar()
     captured = capsys.readouterr()
     assert captured.out == 'S -> aSbS\nS -> eps\n'
 
 
-def test_print_empty_grammar(capsys):
+def test_print_empty_grammar_in_console(capsys):
     g = Grammar()
     g.grammar = {}
-    g.print_grammar()
+    g.print_in_console_grammar()
     captured = capsys.readouterr()
     assert captured.out == ''
+
+
+def test_write_empty_grammar():
+    g = Grammar()
+    test_dir = tempfile.gettempdir()
+    g.grammar = {}
+    g.write_grammar(path.join(test_dir, 'output.txt'))
+    f = open(path.join(test_dir, 'output.txt'), 'r')
+    assert f.read() == ''
+
+
+def test_write_grammar1():
+    g = Grammar()
+    test_dir = tempfile.gettempdir()
+    g.grammar = {'S': [['a', 'b', 'S', 'c'], ['eps']]}
+    g.write_grammar(path.join(test_dir, 'output.txt'))
+    f = open(path.join(test_dir, 'output.txt'), 'r')
+    assert f.read() == 'S a b S c \nS eps \n'
+
+
+def test_write_grammar2():
+    g = Grammar()
+    test_dir = tempfile.gettempdir()
+    g.grammar = {'S': [['eps'], ['a', 'A']], 'A': [['S', 'B']], 'B': [['b', 'S']]}
+    g.write_grammar(path.join(test_dir, 'output.txt'))
+    f = open(path.join(test_dir, 'output.txt'), 'r')
+    assert f.read() == 'S eps \nS a A \nA S B \nB b S \n'
 
 
 def test_read_grammar():
@@ -261,11 +288,11 @@ def test_delete_several_terminals2():
                 assert rule[1].isupper()
 
 
-def is_CNF_rule(nt, rule):
+def is_CNF_rule(nt, rule, start):
     for elem in rule:
-        if elem == 'S':
+        if elem == start:
             return False
-        if elem == 'eps' and nt != 'S':
+        if elem == 'eps' and nt != start:
             return False
         if len(rule) > 2:
             return False
@@ -279,9 +306,9 @@ def is_CNF_rule(nt, rule):
 
 
 def is_CNF_grammar(g):
-    for (nt, rules) in g.items():
+    for (nt, rules) in g.grammar.items():
         for rule in rules:
-            if not is_CNF_rule(nt, rule):
+            if not is_CNF_rule(nt, rule, g.start):
                 return False
     return True
 
@@ -290,9 +317,9 @@ def test_to_CNF1():
     g = Grammar()
     g.grammar = {'S': [['a', 'A']], 'X': [['a', 'Y'], ['eps'], ['b', 'Y']], 'Y': [['a', 'Y'], ['b', 'Y'], ['c', 'c']],
                  'B': [['eps'], ['y', 'X'], ['y']], 'A': [['X', 'B'], ['y', 'X'], ['y']]}
-    assert not is_CNF_grammar(g.grammar)
+    assert not is_CNF_grammar(g)
     g.to_CNF()
-    assert is_CNF_grammar(g.grammar)
+    assert is_CNF_grammar(g)
     assert g.grammar == {'S': [['a'], ['C', 'A']], 'X': [['C', 'Y'], ['D', 'Y']], 'Y': [['C', 'Y'], ['D', 'Y'], ['E',
                                                                                                                  'E']],
                          'B': [['y'], ['F', 'X']], 'A': [['y'], ['X', 'B'], ['F', 'X'], ['C', 'Y'], ['D', 'Y']],
@@ -302,9 +329,9 @@ def test_to_CNF1():
 def test_to_CNF2():
     g = Grammar()
     g.grammar = {'S': [['a', 'S', 'b', 'S'], ['eps']]}
-    assert not is_CNF_grammar(g.grammar)
+    assert not is_CNF_grammar(g)
     g.to_CNF()
-    assert is_CNF_grammar(g.grammar)
+    assert is_CNF_grammar(g)
     assert g.grammar == {'A': [['C', 'B'], ['b'], ['D', 'C']], 'B': [['b'], ['D', 'C']], 'C': [['E', 'A']], 'S': [[
                             'eps'], ['E', 'A']], 'D': [['b']], 'E': [['a']]}
 
@@ -313,9 +340,9 @@ def test_to_CNF3():
     g = Grammar()
     g.grammar = {'S': [['a', 'X', 'b', 'X'], ['a', 'Z']], 'X': [['a', 'Y'], ['b', 'Y'], ['eps']],
                  'Y': [['X'], ['c', 'c']], 'Z': [['Z', 'X']]}
-    assert not is_CNF_grammar(g.grammar)
+    assert not is_CNF_grammar(g)
     g.to_CNF()
-    assert is_CNF_grammar(g.grammar)
+    assert is_CNF_grammar(g)
     assert g.grammar == {'S': [['C', 'A']], 'X': [['a'], ['D', 'Y'], ['C', 'Y']],
                          'Y': [['a'], ['E', 'E'], ['D', 'Y'], ['C', 'Y']], 'A': [['X', 'B'], ['b'], ['D', 'X']],
                          'B': [['b'], ['D', 'X']], 'C': [['a']], 'D': [['b']], 'E': ['c']}
