@@ -263,6 +263,8 @@ def test_delete_several_terminals2():
 
 def is_CNF_rule(nt, rule):
     for elem in rule:
+        if elem == 'S':
+            return False
         if elem == 'eps' and nt != 'S':
             return False
         if len(rule) > 2:
@@ -303,8 +305,8 @@ def test_to_CNF2():
     assert not is_CNF_grammar(g.grammar)
     g.to_CNF()
     assert is_CNF_grammar(g.grammar)
-    assert g.grammar == {'S': [['eps'], ['C', 'A']], 'A': [['S', 'B'], ['b'], ['D', 'S']], 'B': [['b'], ['D', 'S']],
-                         'C': [['a']], 'D': [['b']]}
+    assert g.grammar == {'A': [['C', 'B'], ['b'], ['D', 'C']], 'B': [['b'], ['D', 'C']], 'C': [['E', 'A']], 'S': [[
+                            'eps'], ['E', 'A']], 'D': [['b']], 'E': [['a']]}
 
 
 def test_to_CNF3():

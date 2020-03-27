@@ -122,6 +122,25 @@ class Grammar:
                 if rule == ['eps']:
                     self.delete_rule(nt, rule)
         if 'S' in eps_generating_terminals:  # 'S' is starting nontermenal
+            new_symb = self.get_new_nonterminal()
+            g = self.grammar.copy()
+            for (nt, rules) in g.items():
+                if nt == 'S':
+                    self.grammar[new_symb] = self.grammar.pop('S')
+                new_rules = []
+                for rule in rules:
+                    new_rule = []
+                    for symb in rule:
+                        if symb == 'S':
+                            new_rule.append(new_symb)
+                        else:
+                            new_rule.append(symb)
+                    new_rules.append(new_rule)
+                if nt == 'S':
+                    self.grammar[new_symb] = new_rules
+                    self.grammar['S'] = [[new_symb]]
+                else:
+                    self.grammar[nt] = new_rules
             self.add_rule('S', ['eps'])
 
     def find_chan_pairs(self):
