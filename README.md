@@ -6,5 +6,5 @@
 ```
 
 ```
-pytest-3
+python3 -m pytest
 ```
