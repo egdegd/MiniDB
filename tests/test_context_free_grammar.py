@@ -1,7 +1,7 @@
 import tempfile
 from os import path
 
-from src.CNF import *
+from src.context_free_grammar import *
 
 
 def test_print_grammar_in_console(capsys):
@@ -234,19 +234,19 @@ def test_delete_nongenerating_terminals():
                          'A': [['X', 'B'], ['B']], 'B': [['y', 'X'], ['y']], 'R': [['Y', 'B', 'A', 'B', 'Y', 'X']]}
 
 
-def test_find_achievable_terminals():
+def test_find_reachable_terminals():
     g = Grammar()
     g.grammar = {'S': [['a', 'A'], ['a', 'Z']], 'X': [['a', 'Y'], ['b', 'Y']],
                  'Y': [['a', 'Y'], ['b', 'Y'], ['c', 'c']], 'Z': [['Z', 'X']], 'A': [['X', 'B'], ['B']],
                  'B': [['y', 'X'], ['y']], 'R': [['Y', 'B', 'A', 'B', 'Y', 'X']]}
-    assert g.find_achievable_terminals() == ['S', 'A', 'Z', 'X', 'B', 'Y']
+    assert g.find_reachable_terminals() == ['S', 'A', 'Z', 'X', 'B', 'Y']
 
 
-def test_delete_not_achievable_terminals():
+def test_delete_unreachable_terminals():
     g = Grammar()
     g.grammar = {'S': [['a', 'A'], ['a', 'Z']], 'K': [['a', 'R']], 'Y': [['b', 'Y']], 'A': [['B']],
                  'B': [['y', 'X'], ['y']], 'R': [['Y', 'B', 'A', 'B', 'Y', 'X']]}
-    g.delete_not_achievable_terminals()
+    g.delete_unreachable_terminals()
     assert g.grammar == {'S': [['a', 'A'], ['a', 'Z']], 'A': [['B']], 'B': [['y', 'X'], ['y']]}
 
 
@@ -256,7 +256,7 @@ def test_delete_useless_symbols():  # test from https://neerc.ifmo.ru/wiki/index
                  'Y': [['a', 'Y'], ['b', 'Y'], ['c', 'c']], 'Z': [['Z', 'X']], 'A': [['X', 'B'], ['y', 'X'], ['y']],
                  'B': [['y', 'X'], ['y']]}
     g.delete_nongenerating_terminals()
-    g.delete_not_achievable_terminals()
+    g.delete_unreachable_terminals()
     assert g.grammar == {'S': [['a', 'A']], 'X': [['a', 'Y'], ['b', 'Y']], 'Y': [['a', 'Y'], ['b', 'Y'], ['c', 'c']],
                          'A': [['X', 'B'], ['y', 'X'], ['y']], 'B': [['y', 'X'], ['y']]}
 
@@ -333,7 +333,7 @@ def test_to_CNF2():
     g.to_CNF()
     assert is_CNF_grammar(g)
     assert g.grammar == {'A': [['C', 'B'], ['b'], ['D', 'C']], 'B': [['b'], ['D', 'C']], 'C': [['E', 'A']], 'S': [[
-                            'eps'], ['E', 'A']], 'D': [['b']], 'E': [['a']]}
+        'eps'], ['E', 'A']], 'D': [['b']], 'E': [['a']]}
 
 
 def test_to_CNF3():
@@ -346,3 +346,135 @@ def test_to_CNF3():
     assert g.grammar == {'S': [['C', 'A']], 'X': [['a'], ['D', 'Y'], ['C', 'Y']],
                          'Y': [['a'], ['E', 'E'], ['D', 'Y'], ['C', 'Y']], 'A': [['X', 'B'], ['b'], ['D', 'X']],
                          'B': [['b'], ['D', 'X']], 'C': [['a']], 'D': [['b']], 'E': ['c']}
+
+
+def test_CYK1():
+    g = Grammar()
+    g.grammar = {'S': [['a', 'S', 'b', 'S'], ['eps']]}
+    assert g.CYK('ab')
+    assert g.CYK('aabbab')
+    assert g.CYK('aababbaababb')
+    assert not g.CYK('a')
+    assert not g.CYK('abb')
+    assert not g.CYK('aabbb')
+
+
+def test_CYK2():
+    g = Grammar()
+    g.grammar = {'S': [['a', 'b', 'c', 'D', 'e', 'f', 'S'], ['eps'], ['g', 'h', 'D']], 'D': [['a', 'T', 'd']], 'T': [[
+        'k']]}
+    assert g.CYK('abcakdef')
+    assert g.CYK('abcakdefabcakdef')
+    assert g.CYK('abcakdefghakd')
+    assert not g.CYK('abcakdefghak')
+    assert not g.CYK('abcakcdefghakd')
+    assert not g.CYK('abcefghakd')
+
+
+def test_CYK3():
+    g = Grammar()
+    g.grammar = {'S': [['a', 'S'], ['eps']]}
+    assert g.CYK('a')
+    assert g.CYK('aa')
+    assert g.CYK('aaa')
+    assert g.CYK('aaaa')
+    assert g.CYK('aaaaa')
+    assert not g.CYK('bbaa')
+
+
+def test_read_graph():
+    g = Graph()
+    test_dir = tempfile.gettempdir()
+    f = open(path.join(test_dir, 'input.txt'), 'w')
+    f.write('0 a 1\n 1 a 2\n 2 a 0\n 2 b 3\n 3 b 2\n')
+    f.close()
+    g.read_graph(path.join(test_dir, 'input.txt'))
+    assert g.vertices == [0, 1, 2, 3]
+    assert g.terminals == ['a', 'b']
+    assert g.edges == [(0, 'a', 1), (1, 'a', 2), (2, 'a', 0), (2, 'b', 3), (3, 'b', 2)]
+
+
+def test_read_empty_graph():
+    g = Graph()
+    test_dir = tempfile.gettempdir()
+    f = open(path.join(test_dir, 'input.txt'), 'w')
+    g.read_graph(path.join(test_dir, 'input.txt'))
+    assert g.edges == []
+    assert g.terminals == []
+    assert g.vertices == []
+
+
+def test_write_empty_reachable_pairs():
+    g = Grammar()
+    test_dir = tempfile.gettempdir()
+    open(path.join(test_dir, 'output.txt'), 'w').close()
+    g.write_reachable_pairs([], path.join(test_dir, 'output.txt'))
+    f = open(path.join(test_dir, 'output.txt'), 'r')
+    assert f.read() == ''
+
+
+def test_write_reachable_pairs():
+    g = Grammar()
+    test_dir = tempfile.gettempdir()
+    open(path.join(test_dir, 'output.txt'), 'w').close()
+    g.write_reachable_pairs([('S', 1, 2), ('A', 0, 2), ('S', 1, 3)], path.join(test_dir, 'output.txt'))
+    f = open(path.join(test_dir, 'out1.txt'), 'r')
+    assert f.read() == '1 2\n1 3\n'
+
+
+def test_hellings_init():
+    g = Grammar()
+    g.graph.vertices = [0, 1, 2, 3]
+    g.graph.terminals = ['a', 'b']
+    g.graph.edges = [(0, 'a', 1), (1, 'a', 2), (2, 'a', 0), (2, 'b', 3), (3, 'b', 2)]
+    g.grammar = {'S': [['A', 'B'], ['A', 'S1']], 'S1': [['S', 'B']], 'A': [['a']], 'B': [['b']]}
+    res = g.hellings_init()
+    assert res == [('A', 0, 1), ('A', 1, 2), ('A', 2, 0), ('B', 2, 3), ('B', 3, 2)]
+
+
+def test_hellings1():
+    g = Grammar()
+    g.graph.vertices = [0, 1, 2, 3]
+    g.graph.terminals = ['a', 'b']
+    g.graph.edges = [(0, 'a', 1), (1, 'a', 2), (2, 'a', 0), (2, 'b', 3), (3, 'b', 2)]
+    g.grammar = {'S': [['A', 'B'], ['A', 'S1']], 'S1': [['S', 'B']], 'A': [['a']], 'B': [['b']]}
+    res = g.hellings()
+    good_res = [(1, 3), (0, 2), (2, 3), (1, 2), (0, 3), (2, 2)]
+    count = 0
+    for (nt, a, b) in res:
+        if nt == 'S':
+            count += 1
+            assert (a,  b) in good_res
+    assert count == len(good_res)
+
+
+def test_hellings2():
+    g = Grammar()
+    g.graph.vertices = [0, 1, 2]
+    g.graph.terminals = ['a', 'b', 'c']
+    g.graph.edges = [(0, 'a', 1), (1, 'b', 0), (1, 'c', 2)]
+    g.grammar = {'S': [['eps'], ['a', 'S']]}
+    res = g.hellings()
+    good_res = [(0, 0), (1, 1), (2, 2), (0, 1)]
+    count = 0
+    for (nt, a, b) in res:
+        if nt == 'S':
+            count += 1
+            assert (a, b) in good_res
+    assert count == len(good_res)
+
+
+def test_hellings3():
+    g = Grammar()
+    g.graph.vertices = [0, 2, 3, 4]
+    g.graph.terminals = ['a', 'b', 'c']
+    g.graph.edges = [(0, 'a', 3), (3, 'b', 2), (2, 'c', 0), (3, 'a', 4)]
+    g.grammar = {'S': [['A', 'S', 'B'], ['eps']], 'B': [['b'], ['eps'], ['S', 'A']], 'A': [['a'], ['eps']]}
+    res = g.hellings()
+    good_res = [(0, 0), (3, 3), (2, 2), (4, 4), (3, 4), (0, 4), (3, 2), (0, 2), (0, 3)]
+    count = 0
+    for (nt, a, b) in res:
+        if nt == 'S':
+            count += 1
+            assert (a, b) in good_res
+    assert count == len(good_res)

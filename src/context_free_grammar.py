@@ -1,12 +1,35 @@
-class Grammar:
-    grammar = {}
-    nonterminal_alphabet = []
-    start = ''
+class Graph:
+    def __init__(self):
+        self.vertices = []
+        self.edges = []
+        self.terminals = []
 
+    def read_graph(self, file_name):
+        file = open(file_name, 'r')
+        for line in file:
+            if line[-1:] == '\n':
+                line = line[:-1]
+            if line == '':
+                continue
+            d = line.split(' ')
+            d = list(filter(lambda a: a != '', d))
+            if int(d[0]) not in self.vertices:
+                self.vertices.append(int(d[0]))
+            if int(d[2]) not in self.vertices:
+                self.vertices.append(int(d[2]))
+            if (int(d[0]), d[1], int(d[2])) not in self.edges:
+                self.edges.append((int(d[0]), d[1], int(d[2])))
+            if d[1] not in self.terminals:
+                self.terminals.append(d[1])
+        file.close()
+
+
+class Grammar:
     def __init__(self):
         self.grammar = {}
         self.nonterminal_alphabet = []
         self.start = 'S'
+        self.graph = Graph()
 
     def add_rule(self, nt, rule):
         if nt not in self.nonterminal_alphabet:
@@ -216,25 +239,25 @@ class Grammar:
                 if any([(i not in generating_terminals) and (i.isupper()) for i in rule]):
                     rules.remove(rule)
 
-    def find_achievable_terminals(self):
-        achievable_terminals = [self.start]
+    def find_reachable_terminals(self):
+        reachable_terminals = [self.start]
         flag = True
         while flag:
             flag = False
             for (nt, rules) in self.grammar.items():
-                if nt in achievable_terminals:
+                if nt in reachable_terminals:
                     for rule in rules:
                         for symb in rule:
-                            if (symb not in achievable_terminals) and (symb.isupper()):
-                                achievable_terminals.append(symb)
+                            if (symb not in reachable_terminals) and (symb.isupper()):
+                                reachable_terminals.append(symb)
                                 flag = True
-        return achievable_terminals
+        return reachable_terminals
 
-    def delete_not_achievable_terminals(self):
-        achievable_terminals = self.find_achievable_terminals()
+    def delete_unreachable_terminals(self):
+        reachable_terminals = self.find_reachable_terminals()
         g = self.grammar.copy()
         for (nt, rules) in g.items():
-            if nt not in achievable_terminals:
+            if nt not in reachable_terminals:
                 self.grammar.pop(nt)
 
     def delete_several_terminals(self):
@@ -290,8 +313,119 @@ class Grammar:
         self.delete_eps_rules()
         self.delete_chain_rules()
         self.delete_nongenerating_terminals()
-        self.delete_not_achievable_terminals()
+        self.delete_unreachable_terminals()
         self.delete_several_terminals()
+
+    def CYK(self, w):
+        self.to_CNF()
+        n = len(w)
+        dict = {}
+        for nt in self.nonterminal_alphabet:
+            dict[nt] = False
+        d = [[dict.copy() for j in range(n)] for i in range(n)]
+        for i in range(n):
+            for nt in self.nonterminal_alphabet:
+                if self.grammar.get(nt) is None:
+                    continue
+                if [w[i]] in self.grammar.get(nt):
+                    d[i][i][nt] = True
+
+        for shift in range(1, n):
+            for k in range(n):
+                j = min(k + shift, n - 1)
+                for nt in self.nonterminal_alphabet:
+                    if self.grammar.get(nt) is None:
+                        continue
+                    for rule in self.grammar.get(nt):
+                        if len(rule) == 2 and rule[0].isupper() and rule[1].isupper():
+                            A = rule[0]
+                            B = rule[1]
+                            for l in range(k, j):
+                                if d[k][l][A] and d[l + 1][j][B]:
+                                    d[k][j][nt] = True
+        return d[0][n - 1][self.start]
+
+    def print_matrix(self, d, n):
+        new_d = [[[] for j in range(n)] for i in range(n)]
+        for i in range(n):
+            for j in range(n):
+                for nt in self.nonterminal_alphabet:
+                    if d[i][j][nt]:
+                        new_d[i][j].append(nt)
+        for i in range(n):
+            for j in range(n):
+                print(new_d[i][j], end='                ')
+            print()
+
+    def to_weak_CNF(self):
+        self.delete_long_rules()
+        self.delete_chain_rules()
+        self.delete_nongenerating_terminals()
+        self.delete_unreachable_terminals()
+        self.delete_several_terminals()
+
+    def hellings_init(self):
+        res = []
+        for (nt, rules) in self.grammar.items():
+            if ['eps'] in rules:
+                for v in self.graph.vertices:
+                    res.append((nt, v, v))
+        term = {}
+        for (nt, rules) in self.grammar.items():
+            for rule in rules:
+                if len(rule) == 1 and rule[0].islower() and rule != ['eps']:
+                    if term.get(rule[0]) is None:
+                        term[rule[0]] = [nt]
+                    else:
+                        if nt not in term[rule[0]]:
+                            term[rule[0]].append(nt)
+        for (v, t, u) in self.graph.edges:
+            if term.get(t) is None:
+                continue
+            for nt in term[t]:
+                res.append((nt, v, u))
+        return res
+
+    def hellings(self):
+        print(self.grammar)
+        self.to_weak_CNF()
+        res = self.hellings_init()
+        m = res.copy()
+        two_nt = {}
+        for (nt, rules) in self.grammar.items():
+            for rule in rules:
+                if len(rule) == 2:
+                    if two_nt.get((rule[0], rule[1])) is None:
+                        two_nt[(rule[0], rule[1])] = [nt]
+                    else:
+                        two_nt[(rule[0], rule[1])].append(nt)
+        while m:
+            (Ni, v, u) = m.pop()
+            for (Nj, v2, u2) in res:
+                if u2 != v:
+                    continue
+                if two_nt.get((Nj, Ni)) is None:
+                    continue
+                for Nk in two_nt[(Nj, Ni)]:
+                    if (Nk, v2, u) not in res:
+                        m.append((Nk, v2, u))
+                        res.append((Nk, v2, u))
+            for (Nj, v2, u2) in res:
+                if v2 != u:
+                    continue
+                if two_nt.get((Ni, Nj)) is None:
+                    continue
+                for Nk in two_nt[(Ni, Nj)]:
+                    if (Nk, v, u2) not in res:
+                        m.append((Nk, v, u2))
+                        res.append((Nk, v, u2))
+        return res
+
+    def write_reachable_pairs(self, triples, output_file):
+        file = open(output_file, 'a')
+        for (nt, a, b) in triples:
+            if nt == self.start:
+                file.write(str(a) + ' ' + str(b) + '\n')
 
 
 def generate_bin_seq(k):
@@ -303,13 +437,57 @@ def generate_bin_seq(k):
     return l
 
 
-def main():
-    file_in = input()
-    file_out = input()
+class Client:
+    running = True
     g = Grammar()
-    g.read_grammar(file_in)
-    g.to_CNF()
-    g.write_grammar(file_out)
+
+    def __init__(self):
+        self.commands = {
+            "cnf": self.cnf,
+            "cyk": self.cyk,
+            "hellings": self.hellings,
+            "exit": self.exit
+        }
+
+    def run(self):
+        while self.running:
+            cmd = input().split(" ")
+            if len(cmd) == 1:
+                self.commands[cmd[0]]()
+            if len(cmd) == 2:
+                self.commands[cmd[0]](cmd[1])
+            if len(cmd) == 3:
+                self.commands[cmd[0]](cmd[1], cmd[2])
+            if len(cmd) == 4:
+                self.commands[cmd[0]](cmd[1], cmd[2], cmd[3])
+
+    def cnf(self, file_in, file_out):
+        self.g.read_grammar(file_in)
+        self.g.to_CNF()
+        self.g.write_grammar(file_out)
+
+    def cyk(self, grammar_file, string_file):
+        self.g.read_grammar(grammar_file)
+        print(self.g.grammar)
+        f = open(string_file, 'r')
+        s = f.read()
+        s = s.replace(' ', '')
+        print(self.g.CYK(s))
+
+    def hellings(self, grammar_file, graph_file, output_file):
+        self.g.read_grammar(grammar_file)
+        self.g.graph.read_graph(graph_file)
+        reachable_pairs = self.g.hellings()
+        self.g.write_grammar(output_file)
+        self.g.write_reachable_pairs(reachable_pairs, output_file)
+
+    def exit(self):
+        self.running = False
+
+
+def main():
+    client = Client()
+    client.run()
 
 
 if __name__ == "__main__":
