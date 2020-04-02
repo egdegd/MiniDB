@@ -387,7 +387,6 @@ class Grammar:
         return res
 
     def hellings(self):
-        print(self.grammar)
         self.to_weak_CNF()
         res = self.hellings_init()
         m = res.copy()
@@ -468,7 +467,6 @@ class Client:
 
     def cyk(self, grammar_file, string_file):
         self.g.read_grammar(grammar_file)
-        print(self.g.grammar)
         f = open(string_file, 'r')
         s = f.read()
         s = s.replace(' ', '')
