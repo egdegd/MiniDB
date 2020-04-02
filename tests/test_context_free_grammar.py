@@ -418,7 +418,7 @@ def test_write_reachable_pairs():
     test_dir = tempfile.gettempdir()
     open(path.join(test_dir, 'output.txt'), 'w').close()
     g.write_reachable_pairs([('S', 1, 2), ('A', 0, 2), ('S', 1, 3)], path.join(test_dir, 'output.txt'))
-    f = open(path.join(test_dir, 'out1.txt'), 'r')
+    f = open(path.join(test_dir, 'output.txt'), 'r')
     assert f.read() == '1 2\n1 3\n'
 
 
