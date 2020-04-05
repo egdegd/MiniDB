@@ -29,7 +29,6 @@ class Grammar:
         self.grammar = {}
         self.nonterminal_alphabet = []
         self.start = 'S'
-        self.graph = Graph()
 
     def add_rule(self, nt, rule):
         if nt not in self.nonterminal_alphabet:
@@ -57,6 +56,7 @@ class Grammar:
     def read_grammar(self, file_name):
         file = open(file_name, 'r')
         start_exist = False
+        self.grammar = {}
         for line in file:
             if line[-1:] == '\n':
                 line = line[:-1]
@@ -317,7 +317,13 @@ class Grammar:
         self.delete_several_terminals()
 
     def CYK(self, w):
+        # print(self.grammar)
         self.to_CNF()
+        w = w.replace(' ', '')
+        if w == '':
+            if ['eps'] in self.grammar[self.start]:
+                return True
+            return False
         n = len(w)
         dict = {}
         for nt in self.nonterminal_alphabet:
@@ -343,6 +349,7 @@ class Grammar:
                             for l in range(k, j):
                                 if d[k][l][A] and d[l + 1][j][B]:
                                     d[k][j][nt] = True
+
         return d[0][n - 1][self.start]
 
     def print_matrix(self, d, n):
@@ -364,31 +371,31 @@ class Grammar:
         self.delete_unreachable_terminals()
         self.delete_several_terminals()
 
-    def hellings_init(self):
+    def hellings_init(self, graph):
         res = []
         for (nt, rules) in self.grammar.items():
             if ['eps'] in rules:
-                for v in self.graph.vertices:
+                for v in graph.vertices:
                     res.append((nt, v, v))
         term = {}
         for (nt, rules) in self.grammar.items():
             for rule in rules:
-                if len(rule) == 1 and rule[0].islower() and rule != ['eps']:
+                if len(rule) == 1 and not rule[0].isupper() and rule != ['eps']:
                     if term.get(rule[0]) is None:
                         term[rule[0]] = [nt]
                     else:
                         if nt not in term[rule[0]]:
                             term[rule[0]].append(nt)
-        for (v, t, u) in self.graph.edges:
+        for (v, t, u) in graph.edges:
             if term.get(t) is None:
                 continue
             for nt in term[t]:
                 res.append((nt, v, u))
         return res
 
-    def hellings(self):
+    def hellings(self, graph):
         self.to_weak_CNF()
-        res = self.hellings_init()
+        res = self.hellings_init(graph)
         m = res.copy()
         two_nt = {}
         for (nt, rules) in self.grammar.items():
@@ -469,13 +476,13 @@ class Client:
         self.g.read_grammar(grammar_file)
         f = open(string_file, 'r')
         s = f.read()
-        s = s.replace(' ', '')
         print(self.g.CYK(s))
 
     def hellings(self, grammar_file, graph_file, output_file):
+        graph = Graph()
         self.g.read_grammar(grammar_file)
-        self.g.graph.read_graph(graph_file)
-        reachable_pairs = self.g.hellings()
+        graph.read_graph(graph_file)
+        reachable_pairs = self.g.hellings(graph)
         self.g.write_grammar(output_file)
         self.g.write_reachable_pairs(reachable_pairs, output_file)
 

@@ -354,6 +354,8 @@ def test_CYK1():
     assert g.CYK('ab')
     assert g.CYK('aabbab')
     assert g.CYK('aababbaababb')
+    assert g.CYK('          ')
+    assert g.CYK('')
     assert not g.CYK('a')
     assert not g.CYK('abb')
     assert not g.CYK('aabbb')
@@ -366,6 +368,8 @@ def test_CYK2():
     assert g.CYK('abcakdef')
     assert g.CYK('abcakdefabcakdef')
     assert g.CYK('abcakdefghakd')
+    assert g.CYK(' ')
+    assert g.CYK('')
     assert not g.CYK('abcakdefghak')
     assert not g.CYK('abcakcdefghakd')
     assert not g.CYK('abcefghakd')
@@ -379,7 +383,46 @@ def test_CYK3():
     assert g.CYK('aaa')
     assert g.CYK('aaaa')
     assert g.CYK('aaaaa')
+    assert g.CYK(' ')
+    assert g.CYK('')
     assert not g.CYK('bbaa')
+
+
+def test_CYK_ambiguous_grammar1():
+    g = Grammar()
+    g.grammar = {'S': [['S', '+', 'S'], ['S', '-', 'S'], ['a']]}
+    assert g.CYK('a + a + a')
+    assert g.CYK('a + a + a - a')
+    assert g.CYK('a - a')
+    assert g.CYK('a')
+    assert not g.CYK(' ')
+    assert not g.CYK('a + a +')
+    assert not g.CYK('a + - a')
+
+
+def test_CYK_ambiguous_grammar2():
+    g = Grammar()
+    g.grammar = {'S': [['(', 'S', ')', 'S'], ['S', '(', 'S', ')'], ['eps']]}
+    assert g.CYK('( ( ) )')
+    assert g.CYK('( ) ( ) ( ( ) )')
+    assert g.CYK('( ( ( ) ) ( ) )')
+    assert g.CYK(' ')
+    assert not g.CYK('( ) ) (')
+    assert not g.CYK(') ) ( (')
+    assert not g.CYK('( ( ( ) )')
+
+
+def test_CYK_inherently_ambiguous_language(): #a^n b^m c^k, where n = m or m = k
+    g = Grammar()
+    g.grammar = {'S': [['D', 'C'], ['A', 'E'], ['eps']], 'A': [['a', 'A'], ['eps']], 'B': [['b', 'B'], ['eps']], 'C': [[
+        'c', 'C'], ['eps']], 'D': [['a', 'D', 'b'], ['eps']], 'E': [['b', 'E', 'c'], ['eps']]}
+    assert g.CYK('a b c')
+    assert g.CYK('a a b b c')
+    assert g.CYK('a a a b b b c c c c c c')
+    assert g.CYK('a b b b c c c')
+    assert g.CYK('a b b c c')
+    assert g.CYK(' ')
+    assert not g.CYK('a a b c c с')
 
 
 def test_read_graph():
@@ -424,37 +467,40 @@ def test_write_reachable_pairs():
 
 def test_hellings_init():
     g = Grammar()
-    g.graph.vertices = [0, 1, 2, 3]
-    g.graph.terminals = ['a', 'b']
-    g.graph.edges = [(0, 'a', 1), (1, 'a', 2), (2, 'a', 0), (2, 'b', 3), (3, 'b', 2)]
+    graph = Graph()
+    graph.vertices = [0, 1, 2, 3]
+    graph.terminals = ['a', 'b']
+    graph.edges = [(0, 'a', 1), (1, 'a', 2), (2, 'a', 0), (2, 'b', 3), (3, 'b', 2)]
     g.grammar = {'S': [['A', 'B'], ['A', 'S1']], 'S1': [['S', 'B']], 'A': [['a']], 'B': [['b']]}
-    res = g.hellings_init()
+    res = g.hellings_init(graph)
     assert res == [('A', 0, 1), ('A', 1, 2), ('A', 2, 0), ('B', 2, 3), ('B', 3, 2)]
 
 
 def test_hellings1():
     g = Grammar()
-    g.graph.vertices = [0, 1, 2, 3]
-    g.graph.terminals = ['a', 'b']
-    g.graph.edges = [(0, 'a', 1), (1, 'a', 2), (2, 'a', 0), (2, 'b', 3), (3, 'b', 2)]
+    graph = Graph()
+    graph.vertices = [0, 1, 2, 3]
+    graph.terminals = ['a', 'b']
+    graph.edges = [(0, 'a', 1), (1, 'a', 2), (2, 'a', 0), (2, 'b', 3), (3, 'b', 2)]
     g.grammar = {'S': [['A', 'B'], ['A', 'S1']], 'S1': [['S', 'B']], 'A': [['a']], 'B': [['b']]}
-    res = g.hellings()
+    res = g.hellings(graph)
     good_res = [(1, 3), (0, 2), (2, 3), (1, 2), (0, 3), (2, 2)]
     count = 0
     for (nt, a, b) in res:
         if nt == 'S':
             count += 1
-            assert (a,  b) in good_res
+            assert (a, b) in good_res
     assert count == len(good_res)
 
 
 def test_hellings2():
     g = Grammar()
-    g.graph.vertices = [0, 1, 2]
-    g.graph.terminals = ['a', 'b', 'c']
-    g.graph.edges = [(0, 'a', 1), (1, 'b', 0), (1, 'c', 2)]
+    graph = Graph()
+    graph.vertices = [0, 1, 2]
+    graph.terminals = ['a', 'b', 'c']
+    graph.edges = [(0, 'a', 1), (1, 'b', 0), (1, 'c', 2)]
     g.grammar = {'S': [['eps'], ['a', 'S']]}
-    res = g.hellings()
+    res = g.hellings(graph)
     good_res = [(0, 0), (1, 1), (2, 2), (0, 1)]
     count = 0
     for (nt, a, b) in res:
@@ -466,11 +512,12 @@ def test_hellings2():
 
 def test_hellings3():
     g = Grammar()
-    g.graph.vertices = [0, 2, 3, 4]
-    g.graph.terminals = ['a', 'b', 'c']
-    g.graph.edges = [(0, 'a', 3), (3, 'b', 2), (2, 'c', 0), (3, 'a', 4)]
+    graph = Graph()
+    graph.vertices = [0, 2, 3, 4]
+    graph.terminals = ['a', 'b', 'c']
+    graph.edges = [(0, 'a', 3), (3, 'b', 2), (2, 'c', 0), (3, 'a', 4)]
     g.grammar = {'S': [['A', 'S', 'B'], ['eps']], 'B': [['b'], ['eps'], ['S', 'A']], 'A': [['a'], ['eps']]}
-    res = g.hellings()
+    res = g.hellings(graph)
     good_res = [(0, 0), (3, 3), (2, 2), (4, 4), (3, 4), (0, 4), (3, 2), (0, 2), (0, 3)]
     count = 0
     for (nt, a, b) in res:
@@ -478,3 +525,56 @@ def test_hellings3():
             count += 1
             assert (a, b) in good_res
     assert count == len(good_res)
+
+
+def test_hellings_ambiguous_grammar1():
+    g = Grammar()
+    graph = Graph()
+    graph.vertices = [0, 1, 2, 3, 4]
+    graph.terminals = ['a', '+', '-']
+    graph.edges = [(0, 'a', 1), (1, '+', 2), (2, 'a', 3), (3, '-', 4), (4, 'a', 1), (1, '+', 0)]
+    g.grammar = {'S': [['S', '+', 'S'], ['S', '-', 'S'], ['a']]}
+    res = g.hellings(graph)
+    good_res = [(0, 1), (2, 3), (4, 1), (2, 1), (0, 3), (4, 3)]
+    count = 0
+    for (nt, a, b) in res:
+        if nt == 'S':
+            count += 1
+            assert (a, b) in good_res
+    assert count == len(good_res)
+
+
+def test_hellings_ambiguous_grammar2():
+    g = Grammar()
+    graph = Graph()
+    graph.vertices = [0, 1, 2, 3]
+    graph.terminals = ['(', ')']
+    graph.edges = [(0, '(', 1), (1, ')', 2), (2, '(', 0), (2, ')', 1), (2, '(', 3), (3, ')', 1), (3, '(', 2)]
+    g.grammar = {'S': [['(', 'S', ')', 'S'], ['S', '(', 'S', ')'], ['eps']]}
+    res = g.hellings(graph)
+    good_res = [(0, 0), (1, 1), (2, 2), (3, 3), (2, 1), (3, 1), (3, 2), (0, 1), (0, 2)]
+    count = 0
+    for (nt, a, b) in res:
+        if nt == 'S':
+            count += 1
+            assert (a, b) in good_res
+    assert count == len(good_res)
+
+
+def test_hellings_inherently_ambiguous_language(): #a^n b^m c^k, where n = m or m = k
+    g = Grammar()
+    graph = Graph()
+    graph.vertices = [0, 1, 2, 3, 2]
+    graph.terminals = ['a', 'b', 'c']
+    graph.edges = [(0, 'a', 1), (1, 'b', 2), (0, 'c', 3), (3, 'a', 4), (4, 'a', 2), (3, 'b', 1)]
+    g.grammar = {'S': [['D', 'C'], ['A', 'E'], ['eps']], 'A': [['a', 'A'], ['eps']], 'B': [['b', 'B'], ['eps']], 'C': [[
+        'c', 'C'], ['eps']], 'D': [['a', 'D', 'b'], ['eps']], 'E': [['b', 'E', 'c'], ['eps']]}
+    res = g.hellings(graph)
+    good_res = [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4), (3, 4), (0, 4), (1, 2), (4, 2), (3, 1), (0, 3), (3, 2), (0, 2), (0, 1)]
+    count = 0
+    for (nt, a, b) in res:
+        if nt == 'S':
+            count += 1
+            assert (a, b) in good_res
+    assert count == len(good_res)
+
