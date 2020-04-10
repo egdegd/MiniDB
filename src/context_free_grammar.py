@@ -1,30 +1,5 @@
 import copy
 
-class Graph:
-    def __init__(self):
-        self.vertices = []
-        self.edges = []
-        self.terminals = []
-
-    def read_graph(self, file_name):
-        file = open(file_name, 'r')
-        for line in file:
-            if line[-1:] == '\n':
-                line = line[:-1]
-            if line == '':
-                continue
-            d = line.split(' ')
-            d = list(filter(lambda a: a != '', d))
-            if int(d[0]) not in self.vertices:
-                self.vertices.append(int(d[0]))
-            if int(d[2]) not in self.vertices:
-                self.vertices.append(int(d[2]))
-            if (int(d[0]), d[1], int(d[2])) not in self.edges:
-                self.edges.append((int(d[0]), d[1], int(d[2])))
-            if d[1] not in self.terminals:
-                self.terminals.append(d[1])
-        file.close()
-
 
 class Grammar:
     def __init__(self):
@@ -445,59 +420,3 @@ def generate_bin_seq(k):
         s = '0' * (k - len(s)) + s
         l.append(s)
     return l
-
-
-class Client:
-    running = True
-    g = Grammar()
-
-    def __init__(self):
-        self.commands = {
-            "cnf": self.cnf,
-            "cyk": self.cyk,
-            "hellings": self.hellings,
-            "exit": self.exit
-        }
-
-    def run(self):
-        while self.running:
-            cmd = input().split(" ")
-            if len(cmd) == 1:
-                self.commands[cmd[0]]()
-            if len(cmd) == 2:
-                self.commands[cmd[0]](cmd[1])
-            if len(cmd) == 3:
-                self.commands[cmd[0]](cmd[1], cmd[2])
-            if len(cmd) == 4:
-                self.commands[cmd[0]](cmd[1], cmd[2], cmd[3])
-
-    def cnf(self, file_in, file_out):
-        self.g.read_grammar(file_in)
-        self.g.to_CNF()
-        self.g.write_grammar(file_out)
-
-    def cyk(self, grammar_file, string_file):
-        self.g.read_grammar(grammar_file)
-        f = open(string_file, 'r')
-        s = f.read()
-        print(self.g.CYK(s))
-
-    def hellings(self, grammar_file, graph_file, output_file):
-        graph = Graph()
-        self.g.read_grammar(grammar_file)
-        graph.read_graph(graph_file)
-        reachable_pairs = self.g.hellings(graph)
-        self.g.write_grammar(output_file)
-        self.g.write_reachable_pairs(reachable_pairs, output_file)
-
-    def exit(self):
-        self.running = False
-
-
-def main():
-    client = Client()
-    client.run()
-
-
-if __name__ == "__main__":
-    main()
