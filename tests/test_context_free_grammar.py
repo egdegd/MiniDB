@@ -2,6 +2,7 @@ import tempfile
 from os import path
 
 from src.context_free_grammar import *
+from src.graph import *
 
 
 def test_print_grammar_in_console(capsys):
@@ -423,28 +424,6 @@ def test_CYK_inherently_ambiguous_language(): #a^n b^m c^k, where n = m or m = k
     assert g.CYK('a b b c c')
     assert g.CYK(' ')
     assert not g.CYK('a a b c c с')
-
-
-def test_read_graph():
-    g = Graph()
-    test_dir = tempfile.gettempdir()
-    f = open(path.join(test_dir, 'input.txt'), 'w')
-    f.write('0 a 1\n 1 a 2\n 2 a 0\n 2 b 3\n 3 b 2\n')
-    f.close()
-    g.read_graph(path.join(test_dir, 'input.txt'))
-    assert g.vertices == [0, 1, 2, 3]
-    assert g.terminals == ['a', 'b']
-    assert g.edges == [(0, 'a', 1), (1, 'a', 2), (2, 'a', 0), (2, 'b', 3), (3, 'b', 2)]
-
-
-def test_read_empty_graph():
-    g = Graph()
-    test_dir = tempfile.gettempdir()
-    f = open(path.join(test_dir, 'input.txt'), 'w')
-    g.read_graph(path.join(test_dir, 'input.txt'))
-    assert g.edges == []
-    assert g.terminals == []
-    assert g.vertices == []
 
 
 def test_write_empty_reachable_pairs():
