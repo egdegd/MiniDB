@@ -1,3 +1,5 @@
+import copy
+
 class Graph:
     def __init__(self):
         self.vertices = []
@@ -107,7 +109,8 @@ class Grammar:
             i += 1
 
     def delete_long_rules(self):
-        g = self.grammar.copy()
+        g = copy.deepcopy(self.grammar)
+        # g = self.grammar.copy()
         for (nt, rules) in g.items():
             for rule in rules:
                 cur_nt = nt
@@ -164,7 +167,8 @@ class Grammar:
                     self.delete_rule(nt, rule)
         if self.start in eps_generating_terminals:
             new_symb = self.get_new_nonterminal()
-            g = self.grammar.copy()
+            g = copy.deepcopy(self.grammar)
+            # g = self.grammar.copy()
             for (nt, rules) in g.items():
                 if nt == self.start:
                     self.grammar[new_symb] = self.grammar.pop(self.start)
@@ -230,14 +234,15 @@ class Grammar:
 
     def delete_nongenerating_terminals(self):
         generating_terminals = self.find_generating_terminals()
-        g = self.grammar.copy()
+        g = copy.deepcopy(self.grammar)
+        # g = self.grammar.copy()
         for (nt, rules) in g.items():
             if nt not in generating_terminals:
                 self.grammar.pop(nt)
                 continue
             for rule in rules:
                 if any([(i not in generating_terminals) and (i.isupper()) for i in rule]):
-                    rules.remove(rule)
+                    self.delete_rule(nt, rule)
 
     def find_reachable_terminals(self):
         reachable_terminals = [self.start]
@@ -255,13 +260,13 @@ class Grammar:
 
     def delete_unreachable_terminals(self):
         reachable_terminals = self.find_reachable_terminals()
-        g = self.grammar.copy()
+        g = copy.deepcopy(self.grammar)
         for (nt, rules) in g.items():
             if nt not in reachable_terminals:
                 self.grammar.pop(nt)
 
     def delete_several_terminals(self):
-        g = self.grammar.copy()
+        g = copy.deepcopy(self.grammar)
         nt_to_t = {}
         for (nt, rules) in g.items():
             count = 1
@@ -317,7 +322,6 @@ class Grammar:
         self.delete_several_terminals()
 
     def CYK(self, w):
-        # print(self.grammar)
         self.to_CNF()
         w = w.replace(' ', '')
         if w == '':
@@ -328,7 +332,7 @@ class Grammar:
         dict = {}
         for nt in self.nonterminal_alphabet:
             dict[nt] = False
-        d = [[dict.copy() for j in range(n)] for i in range(n)]
+        d = [[copy.deepcopy(dict) for j in range(n)] for i in range(n)]
         for i in range(n):
             for nt in self.nonterminal_alphabet:
                 if self.grammar.get(nt) is None:
@@ -396,7 +400,7 @@ class Grammar:
     def hellings(self, graph):
         self.to_weak_CNF()
         res = self.hellings_init(graph)
-        m = res.copy()
+        m = copy.deepcopy(res)
         two_nt = {}
         for (nt, rules) in self.grammar.items():
             for rule in rules:
