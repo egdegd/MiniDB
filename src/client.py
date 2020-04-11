@@ -11,6 +11,7 @@ class Client:
             "cnf": self.cnf,
             "cyk": self.cyk,
             "hellings": self.hellings,
+            "evalCFPQ": self.evalCFPQ,
             "exit": self.exit
         }
 
@@ -44,6 +45,14 @@ class Client:
         reachable_pairs = self.g.hellings(graph)
         self.g.write_grammar(output_file)
         self.g.write_reachable_pairs(reachable_pairs, output_file)
+
+    def evalCFPQ(self, grammar_file, graph_file, output_file):
+        graph = Graph()
+        self.g.read_grammar(grammar_file)
+        graph.read_graph(graph_file)
+        matrix = self.g.evalCFPQ(graph)
+        self.g.write_grammar(output_file)
+        self.g.write_reachable_pairs_from_matrix(matrix, output_file)
 
     def exit(self):
         self.running = False
