@@ -1,4 +1,5 @@
-import copy
+from copy import deepcopy
+from scipy.sparse import *
 
 
 class Grammar:
@@ -6,6 +7,16 @@ class Grammar:
         self.grammar = {}
         self.nonterminal_alphabet = []
         self.start = 'S'
+
+    def nonterminal_alphabet_init(self):
+        for (nt, rules) in self.grammar.items():
+            if nt not in self.nonterminal_alphabet:
+                self.nonterminal_alphabet.append(nt)
+            for rule in rules:
+                for elem in rule:
+                    if elem.isupper():
+                        if elem not in self.nonterminal_alphabet:
+                            self.nonterminal_alphabet.append(elem)
 
     def add_rule(self, nt, rule):
         if nt not in self.nonterminal_alphabet:
@@ -84,7 +95,7 @@ class Grammar:
             i += 1
 
     def delete_long_rules(self):
-        g = copy.deepcopy(self.grammar)
+        g = deepcopy(self.grammar)
         # g = self.grammar.copy()
         for (nt, rules) in g.items():
             for rule in rules:
@@ -142,7 +153,7 @@ class Grammar:
                     self.delete_rule(nt, rule)
         if self.start in eps_generating_terminals:
             new_symb = self.get_new_nonterminal()
-            g = copy.deepcopy(self.grammar)
+            g = deepcopy(self.grammar)
             # g = self.grammar.copy()
             for (nt, rules) in g.items():
                 if nt == self.start:
@@ -209,7 +220,7 @@ class Grammar:
 
     def delete_nongenerating_terminals(self):
         generating_terminals = self.find_generating_terminals()
-        g = copy.deepcopy(self.grammar)
+        g = deepcopy(self.grammar)
         # g = self.grammar.copy()
         for (nt, rules) in g.items():
             if nt not in generating_terminals:
@@ -235,13 +246,13 @@ class Grammar:
 
     def delete_unreachable_terminals(self):
         reachable_terminals = self.find_reachable_terminals()
-        g = copy.deepcopy(self.grammar)
+        g = deepcopy(self.grammar)
         for (nt, rules) in g.items():
             if nt not in reachable_terminals:
                 self.grammar.pop(nt)
 
     def delete_several_terminals(self):
-        g = copy.deepcopy(self.grammar)
+        g = deepcopy(self.grammar)
         nt_to_t = {}
         for (nt, rules) in g.items():
             count = 1
@@ -307,7 +318,7 @@ class Grammar:
         dict = {}
         for nt in self.nonterminal_alphabet:
             dict[nt] = False
-        d = [[copy.deepcopy(dict) for j in range(n)] for i in range(n)]
+        d = [[deepcopy(dict) for j in range(n)] for i in range(n)]
         for i in range(n):
             for nt in self.nonterminal_alphabet:
                 if self.grammar.get(nt) is None:
@@ -375,7 +386,7 @@ class Grammar:
     def hellings(self, graph):
         self.to_weak_CNF()
         res = self.hellings_init(graph)
-        m = copy.deepcopy(res)
+        m = deepcopy(res)
         two_nt = {}
         for (nt, rules) in self.grammar.items():
             for rule in rules:
