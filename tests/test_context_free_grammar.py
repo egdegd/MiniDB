@@ -344,7 +344,7 @@ def test_to_CNF1():
     assert g.grammar == {'S': [['a'], ['C', 'A']], 'X': [['C', 'Y'], ['D', 'Y']], 'Y': [['C', 'Y'], ['D', 'Y'], ['E',
                                                                                                                  'E']],
                          'B': [['y'], ['F', 'X']], 'A': [['y'], ['X', 'B'], ['F', 'X'], ['C', 'Y'], ['D', 'Y']],
-                         'C': [['a']], 'D': [['b']], 'E': ['c'], 'F': [['y']]}
+                         'C': [['a']], 'D': [['b']], 'E': [['c']], 'F': [['y']]}
 
 
 def test_to_CNF2():
@@ -368,21 +368,21 @@ def test_to_CNF3():
     assert is_CNF_grammar(g)
     assert g.grammar == {'S': [['C', 'A']], 'X': [['a'], ['D', 'Y'], ['C', 'Y']],
                          'Y': [['a'], ['E', 'E'], ['D', 'Y'], ['C', 'Y']], 'A': [['X', 'B'], ['b'], ['D', 'X']],
-                         'B': [['b'], ['D', 'X']], 'C': [['a']], 'D': [['b']], 'E': ['c']}
+                         'B': [['b'], ['D', 'X']], 'C': [['a']], 'D': [['b']], 'E': [['c']]}
 
 
 def test_CYK1():
     g = Grammar()
     g.grammar = {'S': [['a', 'S', 'b', 'S'], ['eps']]}
     g.nonterminal_alphabet_init()
-    assert g.CYK('ab')
-    assert g.CYK('aabbab')
-    assert g.CYK('aababbaababb')
+    assert g.CYK('a b')
+    assert g.CYK('a a b b a b')
+    assert g.CYK('a a b a b b a a b a b b')
     assert g.CYK('          ')
     assert g.CYK('')
     assert not g.CYK('a')
-    assert not g.CYK('abb')
-    assert not g.CYK('aabbb')
+    assert not g.CYK('a b b')
+    assert not g.CYK('a a b b b')
 
 
 def test_CYK2():
@@ -390,14 +390,14 @@ def test_CYK2():
     g.grammar = {'S': [['a', 'b', 'c', 'D', 'e', 'f', 'S'], ['eps'], ['g', 'h', 'D']], 'D': [['a', 'T', 'd']], 'T': [[
         'k']]}
     g.nonterminal_alphabet_init()
-    assert g.CYK('abcakdef')
-    assert g.CYK('abcakdefabcakdef')
-    assert g.CYK('abcakdefghakd')
+    assert g.CYK('a b c a k d e f')
+    assert g.CYK('a b c a k d e f a b c a k d e f')
+    assert g.CYK('a b c a k d e f g h a k d')
     assert g.CYK(' ')
     assert g.CYK('')
-    assert not g.CYK('abcakdefghak')
-    assert not g.CYK('abcakcdefghakd')
-    assert not g.CYK('abcefghakd')
+    assert not g.CYK('a b c a k d e f g h a k')
+    assert not g.CYK('a b c a k c d e f g h a k d')
+    assert not g.CYK('a b c e f g h a k d')
 
 
 def test_CYK3():
@@ -405,13 +405,13 @@ def test_CYK3():
     g.grammar = {'S': [['a', 'S'], ['eps']]}
     g.nonterminal_alphabet_init()
     assert g.CYK('a')
-    assert g.CYK('aa')
-    assert g.CYK('aaa')
-    assert g.CYK('aaaa')
-    assert g.CYK('aaaaa')
+    assert g.CYK('a a')
+    assert g.CYK('a a a')
+    assert g.CYK('a a a a')
+    assert g.CYK('a a a a a')
     assert g.CYK(' ')
     assert g.CYK('')
-    assert not g.CYK('bbaa')
+    assert not g.CYK('b b a a')
 
 
 def test_CYK_ambiguous_grammar1():

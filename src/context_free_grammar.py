@@ -265,14 +265,14 @@ class Grammar:
                             new_nt1 = self.get_new_nonterminal()
                             count += 1
                             nt_to_t[rule[0]] = new_nt1
-                            self.add_rule(new_nt1, rule[0])
+                            self.add_rule(new_nt1, [rule[0]])
                         if nt_to_t.get(rule[1]) is not None:
                             new_nt2 = nt_to_t[rule[1]]
                         else:
                             new_nt2 = self.get_new_nonterminal()
                             count += 1
                             nt_to_t[rule[1]] = new_nt2
-                            self.add_rule(new_nt2, rule[1])
+                            self.add_rule(new_nt2, [rule[1]])
                         self.add_rule(nt, [new_nt1, new_nt2])
                         self.delete_rule(nt, rule)
                         continue
@@ -309,8 +309,8 @@ class Grammar:
 
     def CYK(self, w):
         self.to_CNF()
-        w = w.replace(' ', '')
-        if w == '':
+        w = w.split()
+        if not w:
             if ['eps'] in self.grammar[self.start]:
                 return True
             return False
