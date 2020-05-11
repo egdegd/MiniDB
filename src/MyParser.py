@@ -3,10 +3,34 @@ import tempfile
 from os import path
 from antlr4 import *
 
-from src.my_grammarErrorListener import MyErrorListener
 from src.my_grammarLexer import my_grammarLexer
-from src.my_grammarListener import my_grammarListener
+from src.MyGrammarListener import MyGrammarListener
 from src.my_grammarParser import my_grammarParser
+
+
+class ErrorListener(object):
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        pass
+
+    def reportAmbiguity(self, recognizer, dfa, startIndex, stopIndex, exact, ambigAlts):
+        pass
+
+    def reportAttemptingFullContext(self, recognizer, dfa, startIndex, stopIndex, conflictingAlts):
+        pass
+
+    def reportContextSensitivity(self, recognizer, dfa, startIndex, stopIndex, prediction):
+        pass
+
+
+class MyErrorListener(ErrorListener):
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        print("line " + str(line) + ":" + str(column) + " " + msg)
+        raise ParseException
+
+
+class ParseException(Exception):
+    pass
 
 
 def read_script_from_file(file_name):
@@ -39,7 +63,7 @@ def check_script(tree):
 def write_tree(tree, file_name):
     f = open(file_name, 'w')
     walker = ParseTreeWalker()
-    collector = my_grammarListener()
+    collector = MyGrammarListener()
     walker.walk(collector, tree)
     f.write('digraph G {\n  ordering = out;\n')
     for i, name in collector.nodes.items():
