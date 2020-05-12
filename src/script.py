@@ -51,7 +51,7 @@ class MyGrammarListener(my_grammarListener):
             self.path = ctx.children[2].symbol.text[1:-1]
         if type(ctx.children[0]) is TerminalNodeImpl and ctx.children[0].symbol.text == 'LIST':
             files = os.listdir(self.path)
-            print(files)
+            print(sorted(files))
 
     # Exit a parse tree produced by my_grammarParser#stmt.
     def exitStmt(self, ctx: my_grammarParser.StmtContext):

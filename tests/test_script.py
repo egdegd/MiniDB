@@ -14,7 +14,7 @@ def test_list_all_graphs(capsys):
     f.close()
     read_script_from_file(path.join(test_dir, 'input.txt'))
     captured = capsys.readouterr()
-    assert captured.out == '[\'graph2.txt\', \'graph1.txt\', \'graph3.txt\']\n'
+    assert captured.out == '[\'graph1.txt\', \'graph2.txt\', \'graph3.txt\']\n'
 
 
 def test_pattern1():
