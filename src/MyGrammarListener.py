@@ -1,14 +1,10 @@
-# Generated from my_grammar.g4 by ANTLR 4.7.2
 from antlr4 import *
 from antlr4.tree.Tree import TerminalNodeImpl
-
-if __name__ is not None and "." in __name__:
-    from .my_grammarParser import my_grammarParser
-else:
-    from src.my_grammarParser import my_grammarParser
+from src.my_grammarListener import my_grammarListener
+from src.my_grammarParser import my_grammarParser
 
 
-class MyGrammarListener(ParseTreeListener):
+class MyGrammarListener(my_grammarListener):
 
     def __init__(self):
         self.nodes = {}

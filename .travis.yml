@@ -1,5 +1,10 @@
 language: python
+dist: bionic
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install antlr4
 install:
   - pip3 install -r requirements.txt
 script:
+  - antlr4 -Dlanguage=Python3 ./src/my_grammar.g4
   - python3 -m pytest

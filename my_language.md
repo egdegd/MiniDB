@@ -37,7 +37,8 @@ V_EXPR:             ident
                    
 PATTERN:            ALT_ELEM
                     | ALT_ELEM mid PATTERN
-                    | SEQ
+                 
+ALT_ELEM:           SEQ
                     | lbr rbr
                     
 SEQ:                SEQ_ELEM
@@ -98,5 +99,5 @@ SELECT COUNT(u) FROM [graph] where (v.ID = 2) - S -> (u);
 ```
 CONNECT TO [\home\graph213];
 SELECT  DEGREE(a) FROM [my_graph.txt];
-WRITE SELECT DISTANCE(a, b) FROM [my_graph.txt] WHERE (a.id = 1, b.id = 2) TO [file.txt];
+WRITE SELECT DISTANCE(a, b) FROM [my_graph.txt] WHERE (a.ID = 1, b.ID = 2) TO [file.txt];
 ```

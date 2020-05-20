@@ -25,19 +25,19 @@ def test_read_script_from_file1():
 def test_read_script_from_file2():
     test_dir = tempfile.gettempdir()
     f = open(path.join(test_dir, 'input.txt'), 'w')
-    f.write('CONNECT TO [hh.txt] ;\n LIST ALL GRAPHS ;\n SELECT DISTANCE (a) FROM [gr.txt] ;\n')
+    f.write('CONNECT TO [hh.txt] ;\n LIST ALL GRAPHS ;\n SELECT COUNT (a) FROM [gr.txt] WHERE (b.ID = 1) -S-> (a);\n')
     f.close()
     tree = read_script_from_file(path.join(test_dir, 'input.txt'))
-    assert tree.toStringTree() == '([] ([28] ([34 28] CONNECT TO [hh.txt]) ; ([36 28] ([31 36 28] LIST ALL GRAPHS) ;) ([36 28] ([31 36 28] ([50 31 36 28] SELECT ([71 50 31 36 28] DISTANCE ([85 71 50 31 36 28] ( a ))) FROM [gr.txt])) ;)) <EOF>)'
+    assert tree.toStringTree() == '([] ([28] ([34 28] CONNECT TO [hh.txt]) ; ([36 28] ([31 36 28] LIST ALL GRAPHS) ;) ([36 28] ([31 36 28] ([50 31 36 28] SELECT ([64 50 31 36 28] COUNT ([72 64 50 31 36 28] ( a ))) FROM [gr.txt] WHERE ([68 50 31 36 28] ( ([88 68 50 31 36 28] b . ID = 1) ) - ([91 68 50 31 36 28] ([107 91 68 50 31 36 28] ([114 107 91 68 50 31 36 28] ([119 114 107 91 68 50 31 36 28] ([125 119 114 107 91 68 50 31 36 28] S))))) - > ( ([95 68 50 31 36 28] a) )))) ;)) <EOF>)'
 
 
 def test_read_script_from_file3():
     test_dir = tempfile.gettempdir()
     f = open(path.join(test_dir, 'input.txt'), 'w')
-    f.write('CONNECT TO [hh.txt] ;\n SELECT DEGREE (hello) FROM [from.txt] ;\n SELECT DISTANCE (a) FROM [gr.txt] ;\n')
+    f.write('CONNECT TO [hh.txt] ;\n SELECT EXISTS (hello) FROM [from.txt] WHERE (hello) - a a | S -> (b.ID = 1) ;\n')
     f.close()
     tree = read_script_from_file(path.join(test_dir, 'input.txt'))
-    assert tree.toStringTree() == '([] ([28] ([34 28] CONNECT TO [hh.txt]) ; ([36 28] ([31 36 28] ([50 31 36 28] SELECT ([71 50 31 36 28] DEGREE ([83 71 50 31 36 28] ( hello ))) FROM [from.txt])) ;) ([36 28] ([31 36 28] ([50 31 36 28] SELECT ([71 50 31 36 28] DISTANCE ([85 71 50 31 36 28] ( a ))) FROM [gr.txt])) ;)) <EOF>)'
+    assert tree.toStringTree() == '([] ([28] ([34 28] CONNECT TO [hh.txt]) ; ([36 28] ([31 36 28] ([50 31 36 28] SELECT ([64 50 31 36 28] EXISTS ([74 64 50 31 36 28] ( hello ))) FROM [from.txt] WHERE ([68 50 31 36 28] ( ([88 68 50 31 36 28] hello) ) - ([91 68 50 31 36 28] ([108 91 68 50 31 36 28] ([114 108 91 68 50 31 36 28] ([120 114 108 91 68 50 31 36 28] ([125 120 114 108 91 68 50 31 36 28] a)) ([121 114 108 91 68 50 31 36 28] ([119 121 114 108 91 68 50 31 36 28] ([125 119 121 114 108 91 68 50 31 36 28] a))))) | ([110 91 68 50 31 36 28] ([107 110 91 68 50 31 36 28] ([114 107 110 91 68 50 31 36 28] ([119 114 107 110 91 68 50 31 36 28] ([125 119 114 107 110 91 68 50 31 36 28] S)))))) - > ( ([95 68 50 31 36 28] b . ID = 1) )))) ;)) <EOF>)'
 
 
 def test_check_correct_scrpt1(capsys):
@@ -54,7 +54,7 @@ def test_check_correct_scrpt1(capsys):
 def test_check_correct_scrpt2(capsys):
     test_dir = tempfile.gettempdir()
     f = open(path.join(test_dir, 'input.txt'), 'w')
-    f.write('CONNECT TO [hh.txt] ;\n LIST ALL GRAPHS ;\n SELECT DISTANCE (a) FROM [gr.txt] ;\n')
+    f.write('CONNECT TO [hh.txt] ;\n LIST ALL GRAPHS ;\n SELECT COUNT (a, b) FROM [gr.txt] WHERE (a) - S -> (b);\n')
     f.close()
     tree = read_script_from_file(path.join(test_dir, 'input.txt'))
     check_script(tree)
@@ -65,7 +65,7 @@ def test_check_correct_scrpt2(capsys):
 def test_check_correct_scrpt3(capsys):
     test_dir = tempfile.gettempdir()
     f = open(path.join(test_dir, 'input.txt'), 'w')
-    f.write('CONNECT TO [hh.txt] ;\n SELECT DEGREE (hello) FROM [from.txt] ;\n SELECT DISTANCE (a) FROM [gr.txt] ;\n')
+    f.write('CONNECT TO [hh.txt] ;\n SELECT EXISTS (hello) FROM [from.txt] WHERE (hwllo.ID = 1) - A -> (b) ;\n SELECT COUNT (a) FROM [gr.txt] WHERE (a) - S -> (b);\n')
     f.close()
     tree = read_script_from_file(path.join(test_dir, 'input.txt'))
     check_script(tree)
@@ -117,7 +117,7 @@ def test_write_tree1():
 def test_write_tree2():
     test_dir = tempfile.gettempdir()
     f = open(path.join(test_dir, 'input.txt'), 'w')
-    f.write('CONNECT TO [hh.txt] ;\n SELECT DEGREE (hello) FROM [from.txt] ;\n SELECT DISTANCE (a) FROM [gr.txt] ;\n')
+    f.write('CONNECT TO [hh.txt] ;\n SELECT EXISTS (hello) FROM [from.txt] WHERE (hello.ID = 1) - A -> (b) ;\n')
     f.close()
     tree = read_script_from_file(path.join(test_dir, 'input.txt'))
     write_tree(tree, path.join(test_dir, 'out.txt'))
@@ -132,11 +132,7 @@ def test_write_tree2():
     assert '[label= "TO"]' in text
     assert '[label= "[hh.txt]"]' in text
     assert '[label= "SELECT"]' in text
-    assert '[label= "DEGREE"]' in text
     assert '[label= "FROM"]' in text
-    assert '[label= "DISTANCE"]' in text
     assert '[label= "("]' in text
     assert '[label= ")"]' in text
-    assert '[label= "a"]' in text
     assert '[label= "[from.txt]"]' in text
-

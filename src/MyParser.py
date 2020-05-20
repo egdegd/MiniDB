@@ -74,4 +74,3 @@ def write_tree(tree, file_name):
             f.write('    ' + str(l) + ' -> ' + str(v) + ';\n')
     f.write('}')
     f.close()
-
