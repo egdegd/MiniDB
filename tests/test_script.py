@@ -46,12 +46,6 @@ def test_list_all_graphs5(capsys):
     assert captured.out == '[\'graph1.txt\', \'graph2.txt\', \'graph3.txt\', \'graph4.txt\']\n[\'g1.txt\', \'g2.txt\', \'g3.txt\']\n'
 
 
-def test_list_all_graphs_from_empty_dir(capsys):
-    create_and_test_file('CONNECT TO [tests/mydir2] ;\n LIST ALL GRAPHS FROM [tests/mydir3];')
-    captured = capsys.readouterr()
-    assert captured.out == '[]\n'
-
-
 def test_pattern1():
     collector = create_and_test_file('S = S a S b ;')
     assert collector.grammar.grammar == {'A': [['S']], 'B': [['a']], 'C': [['S']], 'D': [['b']], 'E': [['C', 'D']],
