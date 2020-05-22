@@ -54,11 +54,11 @@ class MyGrammarListener(my_grammarListener):
         pass
 
     # Enter a parse tree produced by my_grammarParser#list.
-    def enterList(self, ctx: my_grammarParser.ListContext):
+    def enterLst(self, ctx: my_grammarParser.LstContext):
         self.add_rule(ctx, 'list')
 
     # Exit a parse tree produced by my_grammarParser#list.
-    def exitList(self, ctx: my_grammarParser.ListContext):
+    def exitLst(self, ctx: my_grammarParser.LstContext):
         pass
 
     # Enter a parse tree produced by my_grammarParser#named_pattern_stmt.

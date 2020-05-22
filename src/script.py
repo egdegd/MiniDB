@@ -77,7 +77,7 @@ class MyGrammarListener(my_grammarListener):
             file.write(self.select_ans)
 
     # Enter a parse tree produced by my_grammarParser#list.
-    def enterList(self, ctx: my_grammarParser.ListContext):
+    def enterLst(self, ctx: my_grammarParser.LstContext):
         if len(ctx.children) == 3:
             files = os.listdir(self.path)
             print(sorted(files))
@@ -87,7 +87,7 @@ class MyGrammarListener(my_grammarListener):
             print(sorted(files))
 
     # Exit a parse tree produced by my_grammarParser#list.
-    def exitList(self, ctx: my_grammarParser.ListContext):
+    def exitLst(self, ctx: my_grammarParser.LstContext):
         pass
 
     # Enter a parse tree produced by my_grammarParser#named_pattern_stmt.
