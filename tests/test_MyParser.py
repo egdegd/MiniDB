@@ -19,7 +19,7 @@ def test_read_script_from_file1():
     f.write('CONNECT TO [hh.txt] ;\n')
     f.close()
     tree = read_script_from_file(path.join(test_dir, 'input.txt'))
-    assert tree.toStringTree() == '([] ([28] ([31 28] CONNECT TO [hh.txt]) ;) <EOF>)'
+    assert tree.toStringTree() == '([] ([30] ([33 30] CONNECT TO [hh.txt]) ;) <EOF>)'
 
 
 def test_read_script_from_file2():
@@ -28,7 +28,7 @@ def test_read_script_from_file2():
     f.write('CONNECT TO [hh.txt] ;\n LIST ALL GRAPHS ;\n SELECT COUNT (a) FROM [gr.txt] WHERE (b.ID = 1) -S-> (a);\n')
     f.close()
     tree = read_script_from_file(path.join(test_dir, 'input.txt'))
-    assert tree.toStringTree() == '([] ([28] ([34 28] CONNECT TO [hh.txt]) ; ([36 28] ([31 36 28] LIST ALL GRAPHS) ;) ([36 28] ([31 36 28] ([50 31 36 28] SELECT ([64 50 31 36 28] COUNT ([72 64 50 31 36 28] ( a ))) FROM [gr.txt] WHERE ([68 50 31 36 28] ( ([88 68 50 31 36 28] b . ID = 1) ) - ([91 68 50 31 36 28] ([107 91 68 50 31 36 28] ([114 107 91 68 50 31 36 28] ([119 114 107 91 68 50 31 36 28] ([125 119 114 107 91 68 50 31 36 28] S))))) - > ( ([95 68 50 31 36 28] a) )))) ;)) <EOF>)'
+    assert tree.toStringTree() == '([] ([30] ([36 30] CONNECT TO [hh.txt]) ; ([38 30] ([33 38 30] ([49 33 38 30] LIST ALL GRAPHS)) ;) ([38 30] ([33 38 30] ([50 33 38 30] SELECT ([74 50 33 38 30] COUNT ([82 74 50 33 38 30] ( a ))) FROM [gr.txt] WHERE ([78 50 33 38 30] ( ([98 78 50 33 38 30] b . ID = 1) ) - ([101 78 50 33 38 30] ([117 101 78 50 33 38 30] ([124 117 101 78 50 33 38 30] ([129 124 117 101 78 50 33 38 30] ([135 129 124 117 101 78 50 33 38 30] S))))) - > ( ([105 78 50 33 38 30] a) )))) ;)) <EOF>)'
 
 
 def test_read_script_from_file3():
@@ -37,7 +37,7 @@ def test_read_script_from_file3():
     f.write('CONNECT TO [hh.txt] ;\n SELECT EXISTS (hello) FROM [from.txt] WHERE (hello) - a a | S -> (b.ID = 1) ;\n')
     f.close()
     tree = read_script_from_file(path.join(test_dir, 'input.txt'))
-    assert tree.toStringTree() == '([] ([28] ([34 28] CONNECT TO [hh.txt]) ; ([36 28] ([31 36 28] ([50 31 36 28] SELECT ([64 50 31 36 28] EXISTS ([74 64 50 31 36 28] ( hello ))) FROM [from.txt] WHERE ([68 50 31 36 28] ( ([88 68 50 31 36 28] hello) ) - ([91 68 50 31 36 28] ([108 91 68 50 31 36 28] ([114 108 91 68 50 31 36 28] ([120 114 108 91 68 50 31 36 28] ([125 120 114 108 91 68 50 31 36 28] a)) ([121 114 108 91 68 50 31 36 28] ([119 121 114 108 91 68 50 31 36 28] ([125 119 121 114 108 91 68 50 31 36 28] a))))) | ([110 91 68 50 31 36 28] ([107 110 91 68 50 31 36 28] ([114 107 110 91 68 50 31 36 28] ([119 114 107 110 91 68 50 31 36 28] ([125 119 114 107 110 91 68 50 31 36 28] S)))))) - > ( ([95 68 50 31 36 28] b . ID = 1) )))) ;)) <EOF>)'
+    assert tree.toStringTree() == '([] ([30] ([36 30] CONNECT TO [hh.txt]) ; ([38 30] ([33 38 30] ([50 33 38 30] SELECT ([74 50 33 38 30] EXISTS ([84 74 50 33 38 30] ( hello ))) FROM [from.txt] WHERE ([78 50 33 38 30] ( ([98 78 50 33 38 30] hello) ) - ([101 78 50 33 38 30] ([118 101 78 50 33 38 30] ([124 118 101 78 50 33 38 30] ([130 124 118 101 78 50 33 38 30] ([135 130 124 118 101 78 50 33 38 30] a)) ([131 124 118 101 78 50 33 38 30] ([129 131 124 118 101 78 50 33 38 30] ([135 129 131 124 118 101 78 50 33 38 30] a))))) | ([120 101 78 50 33 38 30] ([117 120 101 78 50 33 38 30] ([124 117 120 101 78 50 33 38 30] ([129 124 117 120 101 78 50 33 38 30] ([135 129 124 117 120 101 78 50 33 38 30] S)))))) - > ( ([105 78 50 33 38 30] b . ID = 1) )))) ;)) <EOF>)'
 
 
 def test_check_correct_scrpt1(capsys):

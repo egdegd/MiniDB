@@ -1,7 +1,8 @@
 grammar my_grammar;
 s : script EOF;
 script : stmt SEMI | stmt SEMI script *;
-stmt : KW_CONNECT KW_TO STRING | KW_LIST KW_ALL KW_GRAPHS | select_stmt | named_pattern_stmt | KW_WRITE select_stmt KW_TO STRING ;
+stmt : KW_CONNECT KW_TO STRING | list | select_stmt | named_pattern_stmt | KW_WRITE select_stmt KW_TO STRING ;
+list: KW_LIST KW_ALL KW_GRAPHS | KW_LIST KW_ALL KW_GRAPHS KW_FROM STRING ;
 named_pattern_stmt : NT_NAME OP_EQ pattern;
 select_stmt : KW_SELECT obj_expr KW_FROM STRING KW_WHERE where_expr;
 obj_expr : vs_info | KW_COUNT vs_info | KW_EXISTS vs_info;

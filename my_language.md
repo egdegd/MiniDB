@@ -7,10 +7,13 @@ SCRIPT:             ε
                     | STMT semi SCRIPT
                   
 STMT:               kw_connect kw_to string
-                    | kw_list kw_all kw_graphs
+                    | LIST
                     | SELECT_STMT
                     | NAMED_PATTERN_STMT
                     | kw_write SELECT_STMT kw_to string
+                   
+LIST:               kw_list kw_all kw_graphs
+                    | kw_list kw_all kw_graphs kw_from string
                     
 NAMED_PATTERN_STMT: nt_name op_eq PATTERN
 
@@ -94,4 +97,12 @@ SELECT COUNT(u) FROM [graph] where (v.ID = 2) - S -> (u);
 CONNECT TO [\home\graph213];
 SELECT  EXISTS(u, v) FROM [my_graph.txt] where (u) - (a)* -> (u);
 WRITE SELECT COUNT(a, b) FROM [my_graph.txt] WHERE (a.ID = 1) - S -> (b.ID = 2) TO [file.txt];
+```
+```
+CONNECT TO [\home\graphs];
+LIST OF ALL GRAPHS;
+```
+```
+CONNECT TO [\home\graphs];
+LIST OF ALL GRAPHS FROM [\home\other_graphs];
 ```

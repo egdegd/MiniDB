@@ -69,15 +69,26 @@ class MyGrammarListener(my_grammarListener):
         self.nt_from_seq_elem = []
         if type(ctx.children[0]) is TerminalNodeImpl and ctx.children[0].symbol.text == 'CONNECT':
             self.path = ctx.children[2].symbol.text[1:-1]
-        if type(ctx.children[0]) is TerminalNodeImpl and ctx.children[0].symbol.text == 'LIST':
-            files = os.listdir(self.path)
-            print(sorted(files))
 
     # Exit a parse tree produced by my_grammarParser#stmt.
     def exitStmt(self, ctx: my_grammarParser.StmtContext):
         if type(ctx.children[0]) is TerminalNodeImpl and ctx.children[0].symbol.text == 'WRITE':
             file = open(ctx.children[3].symbol.text[1:-1], 'w')
             file.write(self.select_ans)
+
+    # Enter a parse tree produced by my_grammarParser#list.
+    def enterList(self, ctx: my_grammarParser.ListContext):
+        if len(ctx.children) == 3:
+            files = os.listdir(self.path)
+            print(sorted(files))
+        else:
+            path = ctx.children[4].symbol.text[1:-1]
+            files = os.listdir(path)
+            print(sorted(files))
+
+    # Exit a parse tree produced by my_grammarParser#list.
+    def exitList(self, ctx: my_grammarParser.ListContext):
+        pass
 
     # Enter a parse tree produced by my_grammarParser#named_pattern_stmt.
     def enterNamed_pattern_stmt(self, ctx: my_grammarParser.Named_pattern_stmtContext):

@@ -53,6 +53,14 @@ class MyGrammarListener(my_grammarListener):
     def exitStmt(self, ctx: my_grammarParser.StmtContext):
         pass
 
+    # Enter a parse tree produced by my_grammarParser#list.
+    def enterList(self, ctx: my_grammarParser.ListContext):
+        self.add_rule(ctx, 'list')
+
+    # Exit a parse tree produced by my_grammarParser#list.
+    def exitList(self, ctx: my_grammarParser.ListContext):
+        pass
+
     # Enter a parse tree produced by my_grammarParser#named_pattern_stmt.
     def enterNamed_pattern_stmt(self, ctx: my_grammarParser.Named_pattern_stmtContext):
         self.add_rule(ctx, 'named_pattern_stmt')
