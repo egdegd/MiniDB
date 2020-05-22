@@ -20,9 +20,6 @@ SELECT_STMT:        kw_select OBJ_EXPR kw_from string kw_where WHERE_EXPR
 OBJ_EXPR:           VS_INFO
                     | kw_count VS_INFO
                     | kw_exists VS_INFO
-                    | kw_degree VS_INFO
-                    | kw_distance VS_INFO 
-                    | kw_count_isolated
                     
 VS_INFO:            lbr ident comma ident rbr
                     | lbr ident rbr
@@ -71,9 +68,6 @@ kw_from = 'FROM'
 kw_where = 'WHERE'
 kw_count = 'COUNT'
 kw_exists = 'EXISTS'
-kw_degree = 'DEGREE'
-kw_distance = 'DISTANCE'
-kw_count_isolated = 'COUNTISOLATED'
 lbr = '('
 rbr = ')'
 ident = [a-z][a-z]*
@@ -98,6 +92,6 @@ SELECT COUNT(u) FROM [graph] where (v.ID = 2) - S -> (u);
 ```
 ```
 CONNECT TO [\home\graph213];
-SELECT  DEGREE(a) FROM [my_graph.txt];
-WRITE SELECT DISTANCE(a, b) FROM [my_graph.txt] WHERE (a.ID = 1, b.ID = 2) TO [file.txt];
+SELECT  EXISTS(u, v) FROM [my_graph.txt] where (u) - (a)* -> (u);
+WRITE SELECT COUNT(a, b) FROM [my_graph.txt] WHERE (a.ID = 1) - S -> (b.ID = 2) TO [file.txt];
 ```
